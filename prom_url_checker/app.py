@@ -15,8 +15,8 @@ def run_app(*,
             host: str = "127.0.0.1",
             port: str = "9999",
             sleeptime: ('s', int) = 5,
-            urls: str = None,
-            debug: ('d', bool) = False):
+            urls: Optional[str] = None,
+            debug: ('d', bool) = False) -> None:
     """Starts the prometheus-url-checker metrics server
 
     :param host: Host ip to serve on.
@@ -35,12 +35,12 @@ def run_app(*,
     try:
         _asyncio.runner_setup(loop)
         loop.run_until_complete(
-            prom_server.run_server(host, port, sleeptime, urls))
+            prom_server.run_server(host=host, port=port, sleeptime=sleeptime, urls=urls))
     finally:
         logger.info('Shutting down metrics server.')
 
 
-def cli_run():
+def cli_run() -> None:
     clize.run(run_app)
 
 

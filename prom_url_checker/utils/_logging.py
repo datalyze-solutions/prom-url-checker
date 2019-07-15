@@ -3,7 +3,7 @@
 import logging
 from typing import Any, Callable, Dict, List, Optional
 
-def logging_setup(logging_level=logging.DEBUG):
+def logging_setup(logging_level=logging.DEBUG) -> None:
     """Inits the logging system"""
     logging.basicConfig(level=logging_level)
 

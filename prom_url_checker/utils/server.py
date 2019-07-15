@@ -2,6 +2,7 @@
 
 import aiohttp
 from aiohttp.client_exceptions import ClientConnectorError
+import aioprometheus
 from aioprometheus import Counter, Gauge, Histogram, Service, Summary, formats, timer, inprogress, count_exceptions
 import asyncio
 from collections import namedtuple
@@ -9,9 +10,16 @@ import logging
 import os
 import socket
 from typing import Any, Callable, Dict, List, Optional, Type
+from typing import NamedTuple
+
+# url_health_result = namedtuple('UrlHealthResult', ['url', 'status'])
 
 
-url_health_result = namedtuple('UrlHealthResult', ['url', 'status'])
+class UrlHealthResult(NamedTuple):
+    """Holds infos about a check"""
+    url: str
+    status: int
+
 
 const_labels = {
     "host": socket.gethostname(),
@@ -47,19 +55,19 @@ def parse_urls(
 
 
 def parsed_urls(
-    urls: str = None,
+    urls: Optional[str] = None,
     fallback: Callable[[str], str] = urls_from_env,
     parser: Callable[[str], List[str]] = parse_urls
 ) -> List[str]:
     """Function to return the parsed list of urls"""
     if not urls:
-        urls = fallback()
+        urls = fallback('URLS')
     return parser(urls)
 
 
 @inprogress(url_requests_in_progress, {"route": "/"})
 @timer(url_request_times)
-async def url_health_check(url: str) -> int:
+async def url_health_check(url: str) -> UrlHealthResult:
     """Performs the url check using a HTTP HEAD request and returns the status code"""
 
     logger = logging.getLogger(__name__)
@@ -68,16 +76,16 @@ async def url_health_check(url: str) -> int:
         async with aiohttp.ClientSession() as session:
             async with session.head(url) as response:
                 logger.debug((url, response.status))
-                return url_health_result(url, response.status)
+                return UrlHealthResult(url, response.status)
     except ClientConnectorError as err:
         # maybe wrong dns, e.g. a local host only domain not reachable from the container
         logger.error(err)
-        return url_health_result(url, 1000)
+        return UrlHealthResult(url, 1000)
 
 
 async def url_checker(gauge: Type[Gauge],
                       url: str,
-                      sleeptime: int = 60):
+                      sleeptime: int = 60) -> None:
     """Starts an url checker and updates the given gauge periodically"""
 
     logger = logging.getLogger(__name__)
@@ -93,7 +101,7 @@ async def url_checker(gauge: Type[Gauge],
 async def run_server(host: str = "127.0.0.1",
                      port: str = "9999",
                      sleeptime: int = 5,
-                     urls: List[str] = None):
+                     urls: Optional[str] = None) -> None:
     """Starts the metrics server"""
     logger = logging.getLogger(__name__)
 
@@ -110,7 +118,7 @@ async def run_server(host: str = "127.0.0.1",
 
         url_tasks = [
             url_checker(url_health_metric, url, sleeptime=sleeptime)
-            for url in urls
+            for url in urls if urls
         ]
         tasks = [
             *url_tasks

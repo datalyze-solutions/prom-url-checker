@@ -8,6 +8,6 @@ class GracefulExit(SystemExit):
     code = 1
 
 
-def raise_graceful_exit():
+def raise_graceful_exit() -> None:
     """Raises a GracefulExit exception"""
     raise GracefulExit()

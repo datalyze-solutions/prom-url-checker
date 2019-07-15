@@ -8,7 +8,7 @@ from typing import overload, TypeVar
 from prom_url_checker.exceptions import raise_graceful_exit
 
 
-def runner_setup(loop):
+def runner_setup(loop) -> None:
     """Adds exit signals to the given asyncio loop on which the app exits gracefully"""
     signals = (
         signal.SIGHUP,
