@@ -1,0 +1,37 @@
+[build-system]
+requires = ["flit"]
+build-backend = "flit.buildapi"
+
+[tool.flit.metadata]
+module = "prom_url_checker"
+author = "Matthias Ludwig"
+author-email = "m.ludwig@datalyze-solutions.com"
+home-page=https://github.com/datalyze-solutions/prom-url-checker
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Topic :: System :: Networking :: Monitoring",
+]
+keywords = "http domain url monitoring prometheus check"
+
+requires-python = ">=3.6"
+requires=[
+    "clize==4",
+    "aiohttp==3.5.4",
+    "aioprometheus==18.7.1"
+]
+
+[tool.flit.scripts]
+prom-url-checker = "prom_url_checker.app:cli_run"
+
+[tool.flit.metadata.requires-extra]
+dev  = ["black", "bumpversion", "flake8", "flit", "mypy"]
+doc  = ["mkdocs"]
+test = ["pytest", "pytest-cov", "pytest-asyncio", "pytest-aiohttp", "tox"]
