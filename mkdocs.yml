@@ -1,0 +1,4 @@
+site_name: prom-url-checker docs
+theme: readthedocs
+nav:
+  - README: 'README.md'
