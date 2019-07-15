@@ -1,0 +1,12 @@
+Dockerfile
+docker-compose.yml
+docs
+site
+.git
+.gitignore
+.dockerignore
+mkdocs.yml
+readthedocs.yml
+.bumpversion.cfg
+.vscode
+tox.ini

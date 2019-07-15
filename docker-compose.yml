@@ -1,0 +1,12 @@
+version: '3.7'
+
+services:
+
+  prom-url-checker:
+    image: prom-url-checker:${release_tag:-latest}
+    build: .
+    ports:
+      - "127.0.0.1:9999:9999"
+    environment:
+      "URLS": "https://github.com,https://google.com"
+    command: prom-url-checker --host 0.0.0.0
