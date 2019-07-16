@@ -11,6 +11,7 @@ import os
 import socket
 from typing import Any, Callable, Dict, List, Optional, Type
 from typing import NamedTuple
+from urllib.parse import urlparse
 
 # url_health_result = namedtuple('UrlHealthResult', ['url', 'status'])
 
@@ -65,6 +66,27 @@ def parsed_urls(
     return parser(urls)
 
 
+def replace_if_exists(cond: bool,
+                      repl_exists: str = "****",
+                      repl_not_exists: str = "") -> str:
+    """Replaces a string if the condition is met"""
+    return repl_exists if cond else repl_not_exists
+
+
+def replace_password_and_username(url: str,
+                                  replace: str = "****") -> str:
+    """Replaces username and password in the url if they exist for security reasons."""
+    parsed = urlparse(url)
+
+    if parsed.username and parsed.password:
+        replaced = parsed._replace(
+            netloc=f"{replace_if_exists(parsed.username, replace)}:{replace_if_exists(parsed.password, replace)}@{parsed.hostname}")
+    else:
+        replaced = parsed._replace(netloc=f"{parsed.hostname}")
+
+    return replaced.geturl()
+
+
 @inprogress(url_requests_in_progress, {"route": "/"})
 @timer(url_request_times)
 async def url_health_check(url: str) -> UrlHealthResult:
@@ -75,7 +97,8 @@ async def url_health_check(url: str) -> UrlHealthResult:
     try:
         async with aiohttp.ClientSession() as session:
             async with session.head(url) as response:
-                logger.debug((url, response.status))
+                logger.debug(
+                    (replace_password_and_username(url), response.status))
                 return UrlHealthResult(url, response.status)
     except ClientConnectorError as err:
         # maybe wrong dns, e.g. a local host only domain not reachable from the container
@@ -91,10 +114,11 @@ async def url_checker(gauge: Type[Gauge],
     logger = logging.getLogger(__name__)
 
     while True:
-        logger.debug(f"starting next check of {url}")
+        log_save_url = replace_password_and_username(url)
+        logger.debug(f"starting next check of {log_save_url}")
 
         result = await url_health_check(url)
-        gauge.set({"url": result.url}, result.status)
+        gauge.set({"url": log_save_url}, result.status)
         await asyncio.sleep(sleeptime)
 
 
@@ -103,20 +127,20 @@ async def run_server(host: str = "127.0.0.1",
                      sleeptime: int = 5,
                      urls: Optional[str] = None) -> None:
     """Starts the metrics server"""
-    logger = logging.getLogger(__name__)
+    logger=logging.getLogger(__name__)
 
-    prom_service = Service()
+    prom_service=Service()
     for metric in (url_request_times, url_health_metric, url_requests_in_progress):
         prom_service.register(metric)
 
-    urls = parsed_urls(urls)
+    urls=parsed_urls(urls)
     logger.info(f"Urls to check: {urls}")
 
     try:
         logger.info('Starting metrics server')
-        await prom_service.start(addr=host, port=port)
+        await prom_service.start(addr = host, port = port)
 
-        url_tasks = [
+        url_tasks=[
             url_checker(url_health_metric, url, sleeptime=sleeptime)
             for url in urls if urls
         ]
