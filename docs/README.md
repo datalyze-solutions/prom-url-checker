@@ -2,6 +2,10 @@
 
 This little script periodically checks all configured urls with a HTTP HEAD request. The requests http code will be returned as prometheus compatible metric (gauge).
 
+## Links
+
+* [official docs](https://prom-url-checker.readthedocs.io)
+
 ## Install
 
 The packages uses the `flit` packager and requires `python 3.6`.

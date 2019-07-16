@@ -4,6 +4,8 @@ build-backend = "flit.buildapi"
 
 [tool.flit.metadata]
 module = "prom_url_checker"
+dist-name = "prom-url-checker"
+description-file = "docs/README.md"
 author = "Matthias Ludwig"
 author-email = "m.ludwig@datalyze-solutions.com"
 home-page="https://github.com/datalyze-solutions/prom-url-checker"

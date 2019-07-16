@@ -10,7 +10,7 @@ from datetime import date as _date
 from collections import namedtuple as _namedtuple
 
 # The version is automatically set using the bumpversion tool
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 
 # Homepage for PyPlugs
