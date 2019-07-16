@@ -14,9 +14,9 @@ from typing import Any, Callable, Dict, List, Optional, Type
 def run_app(*,
             host: str = "127.0.0.1",
             port: str = "9999",
-            sleeptime: ('s', int) = 5,
-            urls: Optional[str] = None,
-            debug: ('d', bool) = False) -> None:
+            sleeptime: (int, 's') = 5,
+            urls: str = None,
+            debug: (bool, 'd') = False) -> None:
     """Starts the prometheus-url-checker metrics server
 
     :param host: Host ip to serve on.
